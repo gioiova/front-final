@@ -8,14 +8,12 @@ async function getNews() {
     });
 
     const tableBody = document.getElementById("newsList");
-   
 
     const responseData = await response.json();
 
     responseData.forEach((news) => {
         initNewsLocal(news);
     });
-    console.log(responseData);
 
     initEvents();
 }
@@ -30,9 +28,71 @@ async function deleteNews(newsId) {
     });
 }
 
+async function handleDelete(e) {
+    const newsId = e.target.getAttribute("data-id");
+    const row = document.getElementById(`row_${newsId}`);
+
+    row.classList.add("deleting");
+
+    row.addEventListener("transitionend", async function() {
+        await deleteNews(newsId);
+        row.remove();
+    }, { once: true });
+}
+
+async function updateNews(event) {
+    event.preventDefault();
+
+    const newsId = new URLSearchParams(window.location.search).get('id');
+    const apiURL = `https://btu-exam-cb6c3fdf3b9d.herokuapp.com/news/${newsId}`;
+
+    const editorFirstName = document.getElementById("firstName").value;
+    const editorLastName = document.getElementById("lastName").value;
+    const description = document.getElementById("description").value;
+    const title = document.getElementById("title").value;
+    const category = document.getElementById("category").value;
+
+    console.log("Form data:", { editorFirstName, editorLastName, description, title, category });
+
+    try {
+        const response = await fetch(apiURL, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                editorFirstName,
+                editorLastName,
+                description,
+                title,
+                category,
+            }),
+        });
+
+        console.log("Response status:", response.status);
+
+        if (response.ok) {
+            console.log("news updated successfully");
+            window.location.href = 'index.html';
+        } else {
+            const errorData = await response.json();
+            console.error('error updating news:', errorData);
+            alert('error updating news: ' + JSON.stringify(errorData));
+        }
+    } catch (error) {
+        console.error('error updating news:', error);
+        alert('error updating news: ' + error.message); 
+    }
+}
+
+function handleUpdate(e) {
+    const newsId = e.target.getAttribute("data-id");
+    window.location.href = `update_news.html?id=${newsId}`;
+}
+
 async function createNews(event) {
     event.preventDefault();
-    
+
     const apiURL = "https://btu-exam-cb6c3fdf3b9d.herokuapp.com/news";
 
     const editorFirstName = document.getElementById("firstName").value;
@@ -76,7 +136,7 @@ async function createNews(event) {
 
 function initNewsLocal(news) {
     const tableBody = document.getElementById("newsList");
- 
+
     const tableRow = document.createElement("tr");
     tableRow.id = `row_${news.id}`;
 
@@ -129,12 +189,36 @@ function initNewsLocal(news) {
 function initEvents() {
     const deleteButtons = document.getElementsByClassName("btn-delete");
     Array.from(deleteButtons).forEach((btnDelete) => {
-        btnDelete.addEventListener("click", async function (e) {
-            const newsId = e.target.getAttribute("data-id");
-            await deleteNews(newsId);
-            document.getElementById(`row_${newsId}`).remove();
-        });
+        btnDelete.addEventListener("click", handleDelete);
     });
+
+    const updateButtons = document.getElementsByClassName("btn-action");
+    Array.from(updateButtons).forEach((btnUpdate) => {
+        btnUpdate.addEventListener("click", handleUpdate);
+    });
+}
+
+
+
+async function fetchNewsDetails(newsId) {
+    const apiURL = `https://btu-exam-cb6c3fdf3b9d.herokuapp.com/news/${newsId}`;
+    const response = await fetch(apiURL, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (response.ok) {
+        const news = await response.json();
+        document.getElementById("title").value = news.title;
+        document.getElementById("description").value = news.description;
+        document.getElementById("category").value = news.category;
+        document.getElementById("firstName").value = news.editorFirstName;
+        document.getElementById("lastName").value = news.editorLastName;
+    } else {
+        console.error("Failed to fetch news details");
+    }
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -145,5 +229,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     const addNewsForm = document.getElementById("addNewsForm");
     if (addNewsForm) {
         addNewsForm.addEventListener("submit", createNews);
+    }
+
+    const updateNewsForm = document.getElementById("updateNewsForm");
+    if (updateNewsForm) {
+        updateNewsForm.addEventListener("submit", updateNews);
+        
+        const newsId = new URLSearchParams(window.location.search).get('id');
+        if (newsId) {
+            await fetchNewsDetails(newsId);
+        }
     }
 });
