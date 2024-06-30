@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add News</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="add-container">
+        <h1>Create News</h1>
+        <form id="addNewsForm">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required class="rounded-input"><br>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4" required class="rounded-input"></textarea><br>
+
+            <label for="category">Category:</label>
+            <select id="category" name="category" required class="rounded-input">
+                <option value="Sport">Sport</option>
+                <option value="Tech">Tech</option>
+                <option value="Nature">Nature</option>
+                
+            </select><br>
+
+            <div class="editor-names">
+                <div>
+                    <label for="firstName">Editor First Name:</label>
+                    <input type="text" id="firstName" name="firstName" required class="rounded-input">
+                </div>
+                <div>
+                    <label for="lastName">Editor Last Name:</label>
+                    <input type="text" id="lastName" name="lastName" required class="rounded-input">
+                </div>
+            </div><br>
+
+            <div class="form-buttons">
+                <button type="button" onclick="window.location.href='index.html'" class="cancel-btn">Cancel</button>
+                <button type="submit"   class="save-btn">Save</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
